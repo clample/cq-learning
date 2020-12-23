@@ -147,7 +147,7 @@ class CQLearner:
     def __decrementCoordinationJointStateConfidence(self, joint_states):
         for js in joint_states:            
             self.coordination_joint_states_confidence[js] -= 13
-            # larger discount valuese preferred for game1 (ex: 13) and less for game2 (5)
+            # larger discount valuese preferred for game1 (ex: 13) and larger for game2 (30)
             
             if (self.coordination_joint_states_confidence[js] < 5):
                 self.coordination_joint_states.remove(js)

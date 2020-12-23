@@ -32,7 +32,7 @@ def playOneRun(game, agent1, agent2, agent1_initial_state, agent2_initial_state)
     agent2_global_state_size_performance = []
     
     for episode in range(2000):
-        timesteps, no_of_collisions, agent1_joint_plays, agent2_joint_plays = playJointEpisode(agent1, agent2, game)
+        timesteps, no_of_collisions, agent1_joint_plays, agent2_joint_plays = playJointEpisode(agent1, agent2, game, agent1_initial_state, agent2_initial_state)
         timesteps_performance.append(timesteps)
         collisions_performance.append(no_of_collisions)
         agent1_joint_plays_performance.append(agent1_joint_plays)
@@ -67,11 +67,11 @@ def playOneRun(game, agent1, agent2, agent1_initial_state, agent2_initial_state)
 
 
 
-def playJointEpisode(agent1, agent2, game):
+def playJointEpisode(agent1, agent2, game, agent1_initial_state, agent2_initial_state):
     
     isGameEnded = False
-    agent1_s = 6
-    agent2_s = 8
+    agent1_s = agent1_initial_state
+    agent2_s = agent2_initial_state
     
     #agent1.reset()
     #agent2.reset()
