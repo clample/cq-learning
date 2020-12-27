@@ -81,6 +81,12 @@ class CQLearner:
     
         self.initial_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
         self.latest_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
+
+    def select_action(self):
+        return
+
+    def update_state(self, global_state, reward):
+        return
         
     def takeAction(self, local_state, global_state):
         isNecessary, joint_states_including_local_state = self.__isCoordinationNecessary(local_state)

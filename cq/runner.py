@@ -30,10 +30,11 @@ class Runner:
             agent_actions = self.__get_agent_actions(active_agents)
             action_results = self.environment.apply_actions(agent_actions)
             experiment_results.record(action_results)
+            global_state = { agent_name: result["state"] for (agent_name,result) in action_results.items() }
             for agent in active_agents:
                 result = action_results[agent.name]
                 reward = self.__calculate_reward(result["wall"], result["collision"], result["goal"])
-                agent.update_state(result["state"], reward)
+                agent.update_state(global_state, reward)
             active_agents = list(filter(lambda agent: not action_results[agent.name]["goal"] , active_agents))
 
 

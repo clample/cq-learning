@@ -4,11 +4,12 @@ from .action import Action
 class IndependentAgent:
     """An independent agent using Q-learning"""
 
-    def update_state(self, new_state, reward):
+    def update_state(self, global_state, reward):
         """Update the state according to the previous action
         
         This method will also update the Q-table based on the reward.
         """
+        new_state = global_state[self.name]
         
         if not self.q_table.get(self.state):
             # The Q-values for self.state haven't been initialized yet
