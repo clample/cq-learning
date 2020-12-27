@@ -89,25 +89,32 @@ class CQLearner:
             # TODO: Decrement confidence level
         else:
             self.__select_action_with_table(self.local_q_table, self.state[self.name])
-        
-        # TODO: Increment/decrement confidence level
+            # TODO: Increment confidence level
+            
     def __select_action_with_q_table(self, q_table, state):
+        """Selects an action using the given Q table and state.
+        The Q table and state could be either local or global
+        """
         if random.random() < self.epsilon:
             return random.choice(self.possible_actions)
         else:
-            action
+            action_table = q_table.get(state)
+            # If the Q table hasn't been initialized yet for this state, select an arbitrary action (NORTH)
+            return max(action_table, key=action_table.get) if action_table else Action.NORTH
 
     def update_state(self, global_state, reward):
         """Update the state according to the previous action."""
         new_local_state = global_state[self.name]
         use_global = False # TODO
+
         q_table = self.global_q_table if use_global else self.local_q_table
         old_state = self.state if use_global else self.state[self.name]
+        
         max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if else.q_table.get(new_local_state) else 0
         old_q_value = q_table[old_state][self.previous_action]
         new_q_value = reward + self.discound_factor * max_q_value_next_action
         q_table[old_state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
-
+        
         self.state = global_state
         
     def takeAction(self, local_state, global_state):
