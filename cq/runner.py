@@ -12,22 +12,41 @@ class Runner:
         self.num_episodes = num_episodes
         self.num_trials = num_trials
         self.environment = environment
+
+
+    def run_trial(self, experiment_results, agent_creator):
+        """ Run a trial and record the results using experiment_results
         
-    def run(self, agents):
-        experiment_results = ExperimentResults()
-        for trial in range(num_trials):
-            experiment_results.start_new_trial()
-            for episode in range(num_episodes):
-                agent_actions = {}
-                for agent in agents:
-                    agent_actions[agent.name] = {
-                        "state": agent.state,
-                        "action": agent.select_action()
-                    }
-                action_results = self.environment.apply_actions(agent_actions)
-                experiment_results.record(action_results)
-                for agent in agents:
-                    result = action_results[agent.name]
-                    reward = 0 # TODO: Calculate reward
-                    agent.update_state(result["state"], reward)
-                # TODO: End episode when all agents are in the goal
+        agent_creator is a function which creates a fresh set of agents
+        """
+        experiment_results.start_new_trial()
+        for episode in range(num_episodes):
+            self.run_episode(experiment_results, agent_creator())
+
+    def run_episode(self, experiment_results, agents):
+        """Run an episode and record the results using experiment_results
+        An episode is considered complete when all agents have reached their goal
+        """
+        experiment_results.start_new_episode()
+        # active_agents tracks which agents haven't yet reached their goal
+        # `list` is used to make a shallow copy
+        active_agents = list(agents) 
+        while len(active_agents) > 0:
+            agent_actions = self.get_agent_actions()
+            action_results = self.environment.apply_actions(agent_actions)
+            experiment_results.record(action_results)
+            for agent in active_agents:
+                result = action_results[agent.name]
+                reward = 0 # TODO: Calculate reward
+                agent.update_state(result["state"], reward)
+            active_agents = list(filter(lambda agent: not action_result[agent.name]["goal"] , active_agents))
+
+
+    def get_agent_actions(self, active_agents):
+        agent_actions = {}
+        # TODO: Don't apply for agents in the goal?
+        for agent in active_agents:
+            agent_actions[agent.name] = {
+                "state": agent.state,
+                "action": agent.select_action()
+            }

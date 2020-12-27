@@ -26,10 +26,9 @@ class GridWorld:
             self.wall_east = wall_east
             self.wall_west = wall_west
 
-    # TODO: Handle goal state
     def apply_actions(agent_actions):
         """Applies all of the actions of the agents at the same time.
-        Penalties will be given if the agents collide or hit a wall.
+        Returns if there is a collision, the agents hit a wall, or the agents reach the goal.
         """
         result = {}
         # Find the next states and check if the agents hit a wall
@@ -42,6 +41,12 @@ class GridWorld:
             else:
                 result[agent] = { "state": state, "wall": True }
 
+        # Check if the agents are in the goal state
+        for agent in agent_actions:
+            state = result[agent]["state"]
+            if state == self.goal_state:
+                result[agent]["goal"] = True
+            
         # Check if the agents collide
         for agent in agent_actions:
             state = result[agent]["state"]
@@ -49,7 +54,8 @@ class GridWorld:
                 if agent == other_agent:
                     continue
                 other_state = result[agent]["state"]
-                if state == other_state:
+                # We don't consider it a collision if both agents end in the goal
+                if state == other_state and state != self.goal_state:
                     result[agent][state] = agent_actions[agent]["state"]
                     result[agent]["collision"] = True
         return result
