@@ -78,13 +78,13 @@ class CQLearner:
         conflict_detected = self.__is_conflict_detected(new_local_state, self.previous_action)
         reward_lower = self.__is_reward_less_than_average(new_local_state, self.previous_action, reward)
         if conflict_detected and reward_lower and new_global_state not in self.coordination_states_confidence.keys():
-            self.coordination_states_confidence[new_global_state] = 10
+            self.coordination_states_confidence[new_global_state] = 50
     
     def __increment_coordination_confidence(self):
         for state in self.coordination_states_confidence:
             state_dict = dict(state)
             if state_dict[self.name] == self.local_state:
-                self.coordination_states_confidence[state] += 2
+                self.coordination_states_confidence[state] += 20
                 
     def __decrement_coordination_confidence(self):
         for state in self.coordination_states_confidence:
