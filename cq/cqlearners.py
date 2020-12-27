@@ -128,7 +128,7 @@ class CQLearner:
           ):
             action = self.global_action_selector.selectAction(global_state)
             is_joint = True
-            self.__incrementCoordinationJointStateConfidence(joint_states_including_local_state)
+            self.__incrementCoordinationJointStateConfidence([global_state])
         else:
             action = self.local_action_selector.selectAction(local_state)
             self.__decrementCoordinationJointStateConfidence(joint_states_including_local_state)
