@@ -23,12 +23,11 @@ class CQLearner:
         self.global_action_selector = GlobalActionSelector(name, no_of_states, no_of_actions, epison, discount_factor, learning_rate)
         self.global_action_selector.setup()
 
-        # TODO: Change form to dictionary of dictionary of list (see __update_sliding_windows)
-        self.initial_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
-        self.latest_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
+        self.initial_rewards = {}
+        self.latest_rewards = {}
 
     def select_action(self):
-        use_global = False # TODO
+        use_global = self.state is in self.coordination_states
         if use_global:
             self.__select_action_with_table(self.global_q_table, self.state)
             # TODO: Decrement confidence level
@@ -56,7 +55,7 @@ class CQLearner:
         
     def __upate_q_values(self, global_state, reward):
         new_local_state = global_state[self.name]
-        use_global = False # TODO
+        use_global = global_state is in self.coordination_states
 
         q_table = self.global_q_table if use_global else self.local_q_table
         old_state = self.state if use_global else self.state[self.name]
@@ -74,7 +73,7 @@ class CQLearner:
 
     def __update_conflicting_states(self, global_state, reward):
         local_state = global_state[self.name]
-        conflict_detected = self.__is_confict_detected(local_state, self.previous_action)
+        conflict_detected = self.__is_conflict_detected(local_state, self.previous_action)
         reward_lower = self.__is_reward_less_than_average(local_state, self.previous_action, reward)
         if conflict_detected and reward_lower and global_state not in self.coordination_states.keys():
             self.coordination_states[global_state] = 10
@@ -100,11 +99,11 @@ class CQLearner:
         joint_actions = [joint_state for joint_state in self.coordination_joint_states if joint_state[0] == state]
         return len(joint_actions) > 0, joint_actions
             
-    def __incrementCoordinationJointStateConfidence(self, joint_states):
+    def __increment_coordination_confidence(self):
         for js in joint_states:            
             self.coordination_joint_states_confidence[js] += 1
         
-    def __decrementCoordinationJointStateConfidence(self, joint_states):
+    def __decrement_coordination_confidence(self):
         for js in joint_states:            
             self.coordination_joint_states_confidence[js] -= 13
             # larger discount valuese preferred for game1 (ex: 13) and larger for game2 (30)
@@ -127,26 +126,11 @@ class CQLearner:
                 self.latest_rewards[local_state] = { action:[] for action in self.possible_actions }
             self.latest_rewards[local_state][action].append(reward)
     
-    def __isConflictDetected(self, local_state, action):
+    def __is_conflict_detected(self, local_state, action):
         test_result = stats.ttest_ind(self.initial_rewards[local_state][action], self.latest_rewards[local_state][action])
         return test_result.pvalue < .05
-    
-    def __isRewardLessThanAverage(self, local_state, action, reward):
-        # TODO: Change?
-        return stats.ttest_1samp(self.latest_rewards[local_state][action], popmean=reward)
-        
-    def __mark_state_as_coordination_needed(self, global_state):
-        if(global_state not in self.coordination_joint_states):
-            self.coordination_joint_states_confidence[global_state] = 10
-        
-    def __updateQValues(self, local_state, global_state, action, next_state, reward):
-        isNecessary, _ = self.__isCoordinationNecessary(local_state)
-        if (isNecessary):
-            self.global_action_selector.updateQValuesWithMaxQ(global_state, action, reward, self.local_action_selector.maxQValue(next_state))
-        else:
-            self.local_action_selector.updateQValues(local_state, action, next_state, reward)
 
-
-    def global_state_size(self):
-        return len(self.coordination_joint_states)
-        
+    def __is_reward_less_than_average(self, local_state, action, reward):
+        # TODO: Fix
+        return True
+        # return stats.ttest_1samp(self.latest_rewards[local_state][action], popmean=reward)                
