@@ -89,11 +89,13 @@ class CQLearner:
     def __decrement_coordination_confidence(self):
         for state in self.coordination_states_confidence:
             state_dict = dict(state)
-            if state_dict[self.name] != self.local_state:
-                continue
-            self.coordination_states_confidence[state] -= 1
-            if self.coordination_states_confidence[state] < 0:
-                del self.coordination_states_confidence[state]
+            if state_dict[self.name] == self.local_state:                
+                self.coordination_states_confidence[state] -= 1
+
+        # Remove coordination states that have low confidence
+        self.coordination_states_confidence = {
+            state: val for state, val in self.coordination_states_confidence.items() if val > 0
+        }
     
     def __update_sliding_windows(self, new_local_state, reward):
 
