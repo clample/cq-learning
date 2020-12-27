@@ -5,61 +5,6 @@ import random
 from scipy import stats
 from collections import deque
 
-class ActionSelector: 
-    
-    def __init__(self, name, no_of_states, no_of_actions, epison=0.1, discount_factor=0.9, learning_rate=0.1):
-        self.epison = epison
-        self.discount_factor = discount_factor
-        self.learning_rate = learning_rate
-        self.no_of_states = no_of_states
-        self.no_of_actions = no_of_actions
-        self.name = name
-        
-    def selectAction(self, state):
-        if (random.random() < self.epison):
-            return self.randomAction()
-        else:
-            return self.bestAction(state)
-    
-    def randomAction(self):
-        return np.random.choice(self.no_of_actions)
-        
-    def bestAction(self, state):
-        return np.random.choice(np.flatnonzero(self.q_values[state] == max(self.q_values[state])))
-    
-        
-class LocalActionSelector(ActionSelector): 
-    def setup(self):
-        self.q_values = np.zeros((self.no_of_states, self.no_of_actions))
-        
-    def maxQValue(self, state):
-        return max(self.q_values[state])
-
-    def updateQValues(self, state, action, next_state, reward): 
-        old_q_value = self.q_values[state][action]
-        new_q_value = reward + self.discount_factor * max(self.q_values[next_state])
-        self.q_values[state][action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
-        
-        
-class GlobalActionSelector(ActionSelector): 
-    def setup(self):
-        self.q_values = {}
-    
-    def addState(self, state):
-        if (state not in self.q_values.keys()):
-            self.q_values[state] = np.zeros(self.no_of_actions)
-        
-    def updateQValuesWithMaxQ(self, state, action, reward, maxQValue): 
-        if (state not in self.q_values.keys()):
-            self.q_values[state] = np.zeros(self.no_of_actions)
-            
-        old_q_value = self.q_values[state][action]
-        new_q_value = reward + self.discount_factor * maxQValue
-        self.q_values[state][action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
-        
-        
-        
-
 class CQLearner: 
         
     def __init__(self, name, no_of_states, no_of_actions, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1):
