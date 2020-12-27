@@ -27,6 +27,7 @@ class GridWorld:
             self.wall_west = wall_west
             
     # TODO: Handle the goal state
+    # TODO: Handle multiple agents?
     def apply_action(state, action):
         """Returns the next state and the resulting reward for applying the action"""
 
