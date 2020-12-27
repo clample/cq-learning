@@ -37,7 +37,7 @@ class Runner:
             experiment_results.record(action_results)
             for agent in active_agents:
                 result = action_results[agent.name]
-                reward = 0 # TODO: Calculate reward
+                reward = self.calculate_reward(result["wall"], result["collision"], result["goal"])
                 agent.update_state(result["state"], reward)
             active_agents = list(filter(lambda agent: not action_result[agent.name]["goal"] , active_agents))
 
@@ -50,3 +50,13 @@ class Runner:
                 "state": agent.state,
                 "action": agent.select_action()
             }
+
+    # TODO: Do the rewards actually make a difference?
+    def calculate_reward(self, wall, collision, goal):
+        if collision:
+            return -50
+        elif wall:
+            return -10
+        elif goal:
+            return 1000
+            

@@ -44,12 +44,13 @@ class GridWorld:
         # Check if the agents are in the goal state
         for agent in agent_actions:
             state = result[agent]["state"]
-            if state == self.goal_state:
-                result[agent]["goal"] = True
-            
+            result[agent]["goal"] = state == self.goal_state
+
+                
         # Check if the agents collide
         for agent in agent_actions:
             state = result[agent]["state"]
+            result[agent]["collision"] = False
             for other_agent in agent_actions:
                 if agent == other_agent:
                     continue
