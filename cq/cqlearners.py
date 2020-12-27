@@ -88,7 +88,6 @@ class CQLearner:
             self.__select_action_with_table(self.global_q_table, self.state)
             # TODO: Decrement confidence level
         else:
-            state = 
             self.__select_action_with_table(self.local_q_table, self.state[self.name])
         
         # TODO: Increment/decrement confidence level
@@ -103,10 +102,11 @@ class CQLearner:
         new_local_state = global_state[self.name]
         use_global = False # TODO
         q_table = self.global_q_table if use_global else self.local_q_table
+        old_state = self.state if use_global else self.state[self.name]
         max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if else.q_table.get(new_local_state) else 0
-        old_q_value = q_table[self.state][self.previous_action]
+        old_q_value = q_table[old_state][self.previous_action]
         new_q_value = reward + self.discound_factor * max_q_value_next_action
-        q_table[self.state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
+        q_table[old_state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
 
         self.state = global_state
         
