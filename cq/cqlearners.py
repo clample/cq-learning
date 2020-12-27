@@ -109,8 +109,12 @@ class CQLearner:
 
         q_table = self.global_q_table if use_global else self.local_q_table
         old_state = self.state if use_global else self.state[self.name]
-        
-        max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if else.q_table.get(new_local_state) else 0
+
+        if not q_table.get(old_state):
+            # The Q-values for the state haven't been initialized yet
+            q_table[old_state] = dict.fromkeys(self.possible_actions, 0)
+            
+        max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if self.q_table.get(new_local_state) else 0
         old_q_value = q_table[old_state][self.previous_action]
         new_q_value = reward + self.discound_factor * max_q_value_next_action
         q_table[old_state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
