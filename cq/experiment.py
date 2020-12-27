@@ -9,6 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import games
 import cqlearners
+from functools import reduce
+import seaborn as sns;
+import sys
+import time
+import os
+from IPython.display import display, clear_output
 
 np.set_printoptions(suppress=True)
 
@@ -20,9 +26,9 @@ def playOneRun(game, agent1, agent2, agent1_initial_state, agent2_initial_state)
     agent1_performance = playIndividually(agent1, game, agent1_initial_state)      
     agent2_performance = playIndividually(agent2, game, agent2_initial_state)
 
-    print(agent1.local_action_selector.q_values)
-    print(agent2.local_action_selector.q_values)
-    print("============================")
+    #print(agent1.local_action_selector.q_values)
+    #print(agent2.local_action_selector.q_values)
+    #print("============================")
     
     timesteps_performance = []
     collisions_performance = []
@@ -30,6 +36,9 @@ def playOneRun(game, agent1, agent2, agent1_initial_state, agent2_initial_state)
     agent2_joint_plays_performance = []
     agent1_global_state_size_performance = []
     agent2_global_state_size_performance = []
+    
+    agent1_unsafe_states_performance = np.zeros(game.no_of_states)
+    agent2_unsafe_states_performance = np.zeros(game.no_of_states)
     
     for episode in range(2000):
         timesteps, no_of_collisions, agent1_joint_plays, agent2_joint_plays = playJointEpisode(agent1, agent2, game, agent1_initial_state, agent2_initial_state)
@@ -40,6 +49,14 @@ def playOneRun(game, agent1, agent2, agent1_initial_state, agent2_initial_state)
         agent1_global_state_size_performance.append(agent1.global_state_size())
         agent2_global_state_size_performance.append(agent2.global_state_size())
         
+        for key, value in agent1.coordination_joint_states_confidence.items():
+            agent1_unsafe_states_performance[key[0]] += value 
+            
+        for key, value in agent2.coordination_joint_states_confidence.items():
+            agent2_unsafe_states_performance[key[0]] += value 
+        
+
+    
 
     print(agent1.local_action_selector.q_values)
     print(agent2.local_action_selector.q_values)
@@ -58,11 +75,12 @@ def playOneRun(game, agent1, agent2, agent1_initial_state, agent2_initial_state)
     print("============================")
     print("============================")
         
-    return (agent1_performance, agent2_performance, 
+    return (#agent1_performance, agent2_performance, 
             timesteps_performance, 
             collisions_performance, 
             agent1_joint_plays_performance, agent2_joint_plays_performance,
-            agent1_global_state_size_performance, agent2_global_state_size_performance)
+            agent1_global_state_size_performance, agent2_global_state_size_performance,
+            agent1_unsafe_states_performance, agent2_unsafe_states_performance)
         
 
 
@@ -108,9 +126,11 @@ def playJointEpisode(agent1, agent2, game, agent1_initial_state, agent2_initial_
         
 
 
+
+      
 def playIndividually(agent, game, initial_state):
     agent_performance = []
-    for episode in range(5000): # ideally 10000
+    for episode in range(2000): # ideally 10000
         agent_s = initial_state
         timestep = 1
         isGameEnded = False
@@ -126,6 +146,37 @@ def playIndividually(agent, game, initial_state):
 
 
 
+
+def playAndPlot(agent1, agent2, game, agent1_initial_state, agent2_initial_state):
+    
+    isGameEnded = False
+    agent1_s = agent1_initial_state
+    agent2_s = agent2_initial_state
+
+    
+    while(isGameEnded != True): 
+
+        grid = game.compute_game_grid(agent1_s, agent2_s)
+        os.system('cls')
+        clear_output(wait=True)
+        time.sleep(0.3)
+        print(grid)
+        print("----------------")
+        
+        agent1_a, agent1_is_joint = agent1.takeAction(agent1_s, (agent1_s, agent2_s))
+        agent2_a, agent2_is_joint = agent2.takeAction(agent2_s, (agent2_s, agent1_s))
+        
+        agent1_s_, agent1_r, agent2_s_, agent2_r, collisionExists, isGameEnded = game.next_state_joint(agent1_s, agent1_a, agent2_s, agent2_a)
+         
+        agent1.enviornmentFeedback(agent1_s, (agent1_s, agent2_s), agent1_a, agent1_s_, agent1_r)
+        agent2.enviornmentFeedback(agent2_s, (agent2_s, agent1_s), agent2_a, agent2_s_, agent2_r)
+    
+        agent1_s = agent1_s_
+        agent2_s = agent2_s_
+             
+
+
+
 if __name__ == "__main__":        
     agent1_performance_avg = []
     agent2_performance_avg = [] 
@@ -135,37 +186,45 @@ if __name__ == "__main__":
     agent2_joint_plays_performance_avg = []
     agent1_global_state_size_performance_avg = []
     agent2_global_state_size_performance_avg = []
+    agent1_unsafe_states_performance_avg = []
+    agent2_unsafe_states_performance_avg = []
     
     
-    no_of_runs = 1
+    no_of_runs = 2
     for run in range(no_of_runs):
         
         """
         for game2: 
         game1 = games.Game2()
-        set no_of_states to 25
-        pass initial states 0,20 to playOneRun instead of 6,8
+        initial states to 0,20 instead of 6,8
         """
+        agent1_initial_state = 0
+        agent2_initial_state = 20
         
-        game1 = games.Game1()
-        agent1 = cqlearners.CQLearner(name="agent1", no_of_states=9, no_of_actions=4, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1)
-        agent2 = cqlearners.CQLearner(name="agent2", no_of_states=9, no_of_actions=4, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1)
+        game1 = games.Game2()
+        agent1 = cqlearners.CQLearner(name="agent1", no_of_states=game1.no_of_states, no_of_actions=4, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1)
+        agent2 = cqlearners.CQLearner(name="agent2", no_of_states=game1.no_of_states, no_of_actions=4, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1)
   
-        agent1_performance, agent2_performance, \
-            timesteps_performance, collisions_performance, \
-                agent1_joint_plays_performance, agent2_joint_plays_performance, \
-                    agent1_global_state_size_performance, agent2_global_state_size_performance = playOneRun(game1, agent1, agent2, 6, 8)
-                    
-        agent1_performance_avg.append(agent1_performance)
-        agent2_performance_avg.append(agent2_performance)
+        #agent1_performance, agent2_performance, \
+        timesteps_performance, collisions_performance, \
+            agent1_joint_plays_performance, agent2_joint_plays_performance, \
+                agent1_global_state_size_performance, agent2_global_state_size_performance, \
+                    agent1_unsafe_states_performance, agent2_unsafe_states_performance = playOneRun(game1, agent1, agent2, agent1_initial_state, agent2_initial_state)
+                
+        #agent1_performance_avg.append(agent1_performance)
+        #agent2_performance_avg.append(agent2_performance)
         timesteps_performance_avg.append(timesteps_performance)
         collisions_performance_avg.append(collisions_performance)
         agent1_joint_plays_performance_avg.append(agent1_joint_plays_performance)
         agent2_joint_plays_performance_avg.append(agent2_joint_plays_performance)
         agent1_global_state_size_performance_avg.append(agent1_global_state_size_performance)
         agent2_global_state_size_performance_avg.append(agent2_global_state_size_performance)
+        agent1_unsafe_states_performance_avg.append(agent1_unsafe_states_performance)
+        agent2_unsafe_states_performance_avg.append(agent2_unsafe_states_performance)
     
+        playAndPlot(agent1, agent2, game1, agent1_initial_state, agent2_initial_state)
           
+    
     """      
     plt.figure()  
     plt.plot(np.mean(agent1_performance_avg, axis=0), label="agent1")
@@ -200,3 +259,13 @@ if __name__ == "__main__":
     plt.xlabel('episodes')
     plt.ylabel('global state size')
     plt.legend()
+
+    plt.figure()
+    ax = sns.heatmap(np.mean(agent1_unsafe_states_performance_avg, axis=0).reshape(game1.no_of_rows,game1.no_of_columns), cmap="YlGnBu")
+    plt.xlabel('agent1')
+
+    plt.figure()
+    ax = sns.heatmap(np.mean(agent2_unsafe_states_performance_avg, axis=0).reshape(game1.no_of_rows,game1.no_of_columns), cmap="YlGnBu")
+    plt.xlabel('agent2')
+
+

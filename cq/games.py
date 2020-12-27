@@ -6,7 +6,9 @@ Created on Wed Dec 23 10:23:27 2020
 """
 
 import random
-
+import sys
+import math
+import numpy as np 
 
 """
 up -> 0
@@ -15,12 +17,35 @@ down -> 2
 left -> 3
 """
 
-class Game1:
+class Game:
+    
+    def compute_game_grid(self, agent1_s, agent2_s):
+        grid = self.__fill_grid(agent1_s, agent2_s)
+        return np.array(grid)
+        
+    def __fill_grid(self, agent1_s, agent2_s):
+        game_grid = [[" " for y in range(self.no_of_rows)] for x in range(self.no_of_columns)]
+        agent1_row, agent1_col = self.__convert_state_to_col_rows(agent1_s)
+        game_grid[int(agent1_row)][int(agent1_col)] = 'X'
+        agent2_row, agent2_col = self.__convert_state_to_col_rows(agent2_s)
+        game_grid[int(agent2_row)][int(agent2_col)] = 'Y'
+        return game_grid
+    
+    def __convert_state_to_col_rows(self, state):
+        return (math.floor(state/self.no_of_rows), state%self.no_of_columns)
+    
+    
+    
+
+class Game1(Game):
     goal_state = 1
     top_edge_states = [0,1,2]
     right_edge_states = [2,5,8]
     left_edge_states = [0,3,6]
     bottom_edge_states = [6,7,8]
+    no_of_states = 9
+    no_of_rows = 3
+    no_of_columns = 3
     
     no_top_allowed_states = [6,8]
     no_bottom_allowed_states = [3,5]
@@ -106,20 +131,22 @@ class Game1:
                 r = 0
         
         return (s_,r)
-    
-    
+
     
     
             
 
 
-class Game2:
+class Game2(Game):
     goal_state = 10
     top_edge_states = [0,1,2,3,4]
     right_edge_states = [4,9,14,19,24]
     left_edge_states = [0,5,10,15,20]
     bottom_edge_states = [20,21,22,23,24]
-    
+    no_of_states = 25
+    no_of_rows = 5
+    no_of_columns = 5
+
     no_top_allowed_states = [10,11,12,13] + [15,16,17,18]
     no_bottom_allowed_states = [5,6,7,8] + [10,11,12,13]
     
