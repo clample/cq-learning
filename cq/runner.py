@@ -42,7 +42,7 @@ class Runner:
         agent_actions = {}
         for agent in active_agents:
             agent_actions[agent.name] = {
-                "state": agent.state,
+                "state": agent.local_state,
                 "action": agent.select_action()
             }
         return agent_actions

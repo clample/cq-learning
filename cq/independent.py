@@ -11,15 +11,15 @@ class IndependentAgent:
         """
         new_state = global_state[self.name]
         
-        if not self.q_table.get(self.state):
+        if not self.q_table.get(self.local_state):
             # The Q-values for self.state haven't been initialized yet
-            self.q_table[self.state] = dict.fromkeys(self.possible_actions, 0)
+            self.q_table[self.local_state] = dict.fromkeys(self.possible_actions, 0)
 
-        previous_q_value = self.q_table[self.state][self.previous_action]
+        previous_q_value = self.q_table[self.local_state][self.previous_action]
         max_next_action = max(self.q_table.get(new_state).values()) if self.q_table.get(new_state) else 0
-        self.q_table[self.state][self.previous_action] = previous_q_value + \
+        self.q_table[self.local_state][self.previous_action] = previous_q_value + \
             self.learning_rate(self.time_step) * (reward + self.discount_factor * max_next_action - previous_q_value)
-        self.state = new_state
+        self.local_state = new_state
         self.time_step += 1
 
     def select_action(self):
@@ -41,7 +41,7 @@ class IndependentAgent:
     def __select_greedy_action(self):
         """Greedily selects an action based on the current Q-table"""
         
-        action_table = self.q_table.get(self.state)
+        action_table = self.q_table.get(self.local_state)
 
         if not action_table:
             # The Q table hasn't been initialized yet for this state,
@@ -59,7 +59,7 @@ class IndependentAgent:
         self.epsilon = epsilon
         self.discount_factor = discount_factor
         self.q_table = {}
-        self.state = state
+        self.local_state = state
         self.possible_actions = [Action.NORTH, Action.SOUTH, Action.EAST, Action.WEST]
         self.time_step = 1
         self.name = name
