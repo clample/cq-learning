@@ -73,9 +73,6 @@ def playJointEpisode(agent1, agent2, game, agent1_initial_state, agent2_initial_
     agent1_s = agent1_initial_state
     agent2_s = agent2_initial_state
     
-    #agent1.reset()
-    #agent2.reset()
-
     timesteps = 1
     no_of_collisions = 0
     agent1_joint_plays = 0
