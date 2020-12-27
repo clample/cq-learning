@@ -13,7 +13,7 @@ class Runner:
         self.num_trials = num_trials
         self.environment = environment
 
-
+    # TODO: How to handle agent_creator?
     def run_trial(self, experiment_results, agent_creator):
         """ Run a trial and record the results using experiment_results
         
@@ -44,14 +44,12 @@ class Runner:
 
     def get_agent_actions(self, active_agents):
         agent_actions = {}
-        # TODO: Don't apply for agents in the goal?
         for agent in active_agents:
             agent_actions[agent.name] = {
                 "state": agent.state,
                 "action": agent.select_action()
             }
-
-    # TODO: Do the rewards actually make a difference?
+            
     def calculate_reward(self, wall, collision, goal):
         if collision:
             return -50
