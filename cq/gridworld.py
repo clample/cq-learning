@@ -26,6 +26,7 @@ class GridWorld:
             self.wall_east = wall_east
             self.wall_west = wall_west
 
+    # TODO: Handle goal state
     def apply_actions(agent_actions):
         """Applies all of the actions of the agents at the same time.
         Penalties will be given if the agents collide or hit a wall.
