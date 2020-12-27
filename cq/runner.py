@@ -7,14 +7,15 @@ class Runner:
         self.num_trials = num_trials
         self.environment = environment
 
-    # TODO: How to handle agent_creator
     def run(self, agent_creator):
         """Run the experiment with the given number of trials and episodes"""
         experiment_results = ExperimentResults()
         for trial in range(self.num_trials):
             experiment_results.start_new_trial()
+            # New agents are created for each trial, but reused between episodes
+            agents = agent_creator()
             for episode in range(self.num_episodes):
-                self.__run_episode(experiment_results, agent_creator())
+                self.__run_episode(experiment_results, agents)
         return experiment_results
         
     def __run_episode(self, experiment_results, agents):
