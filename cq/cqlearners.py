@@ -13,18 +13,21 @@ class CQLearner:
         self.possible_actions = [Action.NORTH, Action.SOUTH, Action.EAST, Action.WEST]
         
         self.coordination_states_confidence = {}
+
+        self.local_q_table = {}
+        self.global_q_table = {}
         
         self.initial_rewards = {}
         self.latest_rewards = {}
         self.state = initial_state
 
     def select_action(self):
-        use_global = self.state is in self.coordination_states_confidence
+        use_global = self.state in self.coordination_states_confidence
         if use_global:
-            self.__select_action_with_table(self.global_q_table, self.state)
+            self.__select_action_with_q_table(self.global_q_table, self.state)
             self.__increment_coordination_confidence()
         else:
-            self.__select_action_with_table(self.local_q_table, self.state[self.name])
+            self.__select_action_with_q_table(self.local_q_table, self.state[self.name])
             self.__decrement_coordination_confidence()
 
     def update_state(self, global_state, reward):
@@ -47,7 +50,7 @@ class CQLearner:
         
     def __upate_q_values(self, global_state, reward):
         new_local_state = global_state[self.name]
-        use_global = global_state is in self.coordination_states_confidence
+        use_global = global_state in self.coordination_states_confidence
 
         q_table = self.global_q_table if use_global else self.local_q_table
         old_state = self.state if use_global else self.state[self.name]
