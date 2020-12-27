@@ -8,7 +8,7 @@ class GridWorld:
         The square may or may not have walls blocking the agent on its sides.
         """
 
-        def permits_move(action):
+        def permits_move(self, action):
             if action == Action.NORTH:
                 return not self.wall_north
             elif action == Action.SOUTH:
@@ -26,7 +26,7 @@ class GridWorld:
             self.wall_east = wall_east
             self.wall_west = wall_west
 
-    def apply_actions(agent_actions):
+    def apply_actions(self, agent_actions):
         """Applies all of the actions of the agents at the same time.
         Returns if there is a collision, the agents hit a wall, or the agents reach the goal.
         """
@@ -61,7 +61,7 @@ class GridWorld:
                     result[agent]["collision"] = True
         return result
 
-    def __get_next_state(state, action):
+    def __get_next_state(self, state, action):
         """Find the next state by applying the given action.
         Note that this method doesn't check if the action is actually possible.
         There might be a wall, or the agents might collide.
@@ -69,9 +69,9 @@ class GridWorld:
         """
         x,y = state
         if action == Action.NORTH:
-            return (x, y+1)
-        elif action == Action.SOUTH:
             return (x, y-1)
+        elif action == Action.SOUTH:
+            return (x, y+1)
         elif action == Action.EAST:
             return (x+1, y)
         elif action == Action.WEST:
@@ -79,7 +79,7 @@ class GridWorld:
         else:
             raise Exception(f"Unsupported action {action}")
 
-    def __get_square(state):
+    def __get_square(self, state):
         x,y = state
         return self.grid[y][x]
     

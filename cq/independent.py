@@ -16,7 +16,7 @@ class IndependentAgent:
 
         previous_q_value = self.q_table[self.state][self.previous_action]
         max_next_action = max(self.q_table.get(new_state).values()) if self.q_table.get(new_state) else 0
-        self.q_table[self.state][self.previous_action] = previous_q_value + \\
+        self.q_table[self.state][self.previous_action] = previous_q_value + \
             self.learning_rate(self.time_step) * (reward + self.discount_factor * max_next_action - previous_q_value)
         self.state = new_state
         self.time_step += 1
@@ -40,7 +40,7 @@ class IndependentAgent:
     def __select_greedy_action(self):
         """Greedily selects an action based on the current Q-table"""
         
-        action_table = self.q_table.get(state)
+        action_table = self.q_table.get(self.state)
 
         if not action_table:
             # The Q table hasn't been initialized yet for this state,

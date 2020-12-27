@@ -26,14 +26,14 @@ class Runner:
         # `list` is used to make a shallow copy
         active_agents = list(agents) 
         while len(active_agents) > 0:
-            agent_actions = self.__get_agent_actions()
+            agent_actions = self.__get_agent_actions(active_agents)
             action_results = self.environment.apply_actions(agent_actions)
             experiment_results.record(action_results)
             for agent in active_agents:
                 result = action_results[agent.name]
                 reward = self.__calculate_reward(result["wall"], result["collision"], result["goal"])
                 agent.update_state(result["state"], reward)
-            active_agents = list(filter(lambda agent: not action_result[agent.name]["goal"] , active_agents))
+            active_agents = list(filter(lambda agent: not action_results[agent.name]["goal"] , active_agents))
 
 
     def __get_agent_actions(self, active_agents):
@@ -43,6 +43,7 @@ class Runner:
                 "state": agent.state,
                 "action": agent.select_action()
             }
+        return agent_actions
             
     def __calculate_reward(self, wall, collision, goal):
         if collision:
@@ -51,4 +52,6 @@ class Runner:
             return -10
         elif goal:
             return 1000
+        else:
+            return 0
             
