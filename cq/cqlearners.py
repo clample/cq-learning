@@ -7,17 +7,19 @@ from collections import deque
 
 class CQLearner: 
         
-    def __init__(self, name, sliding_window_size=60, epsilon=0.1, discount_factor=0.9, learning_rate=0.1):
+    def __init__(self, name, initial_state, sliding_window_size=60, epsilon=0.1, discount_factor=0.9, learning_rate=0.1):
         self.name = name
         self.epsilon = epsilon
         self.discount_factor = discount_factor
         self.learning_rate = learning_rate
         self.sliding_window_size = sliding_window_size
+        self.possible_actions = [Action.NORTH, Action.SOUTH, Action.EAST, Action.WEST]
         
         self.coordination_states_confidence = {}
         
         self.initial_rewards = {}
         self.latest_rewards = {}
+        self.state = initial_state
 
     def select_action(self):
         use_global = self.state is in self.coordination_states_confidence
@@ -104,7 +106,7 @@ class CQLearner:
     
     def __is_conflict_detected(self, local_state, action):
         test_result = stats.ttest_ind(self.initial_rewards[local_state][action], self.latest_rewards[local_state][action])
-        return test_result.pvalue < .05
+        return test_result.pvalue < 0.10
 
     def __is_reward_less_than_average(self, local_state, action, reward):
         # TODO: Fix
