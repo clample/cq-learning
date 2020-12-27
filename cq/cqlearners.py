@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 23 10:26:22 2020
-
-@author: as
-"""
-
 
 import numpy as np
 import random
@@ -12,14 +6,6 @@ from scipy import stats
 from collections import deque
 
 class ActionSelector: 
-    epison = None
-    discount_factor = None
-    learning_rate = None
-
-    q_values = None
-    no_of_states = None
-    no_of_actions = None
-    name = None
     
     def __init__(self, name, no_of_states, no_of_actions, epison=0.1, discount_factor=0.9, learning_rate=0.1):
         self.epison = epison
@@ -75,25 +61,7 @@ class GlobalActionSelector(ActionSelector):
         
 
 class CQLearner: 
-    
-    coordination_joint_states = None
-    coordination_joint_states_confidence = None
-    
-    local_action_selector = None
-    global_action_selector = None
-    
-    initial_rewards = None
-    latest_rewards = None
-    
-    no_of_actions = None
-    no_of_states = None
-    
-    epison = None
-    discount_factor = None
-    learning_rate = None
-    sliding_window_size = None
-    name = None
-    
+        
     def __init__(self, name, no_of_states, no_of_actions, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1):
         self.name = name
         self.no_of_actions = no_of_actions
