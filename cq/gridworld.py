@@ -25,23 +25,40 @@ class GridWorld:
             self.wall_south = wall_south
             self.wall_east = wall_east
             self.wall_west = wall_west
-            
-    # TODO: Handle the goal state
-    # TODO: Handle multiple agents?
-    def apply_action(state, action):
-        """Returns the next state and the resulting reward for applying the action"""
 
-        x, y = state
-        current_square = self.grid[y][x]
-        if current_square.permits_move(action):
-            next_state = self.__get_next_state(state, action)
-            # The next square is open, so the agent may move to it.
-            return (next_state, 0)
-        else:
-            # The next square is blocked. The agent remains in place and receives a penalty.
-            return (state, -100)
+    def apply_actions(agent_actions):
+        """Applies all of the actions of the agents at the same time.
+        Penalties will be given if the agents collide or hit a wall.
+        """
+        result = {}
+        # Find the next states and check if the agents hit a wall
+        for agent in agent_actions:
+            state = agent_actions[agent]["state"]
+            action = agent_actions[agent]["action"]
+            current_square = self.__get_square(state)
+            if current_square.permits_move(action):
+                result[agent] = { "state": self.__get_next_state(state, action), "wall": False }
+            else:
+                result[agent] = { "state": state, "wall": True }
+
+        # Check if the agents collide
+        for agent in agent_actions:
+            state = result[agent]["state"]
+            for other_agent in agent_actions:
+                if agent == other_agent:
+                    continue
+                other_state = result[agent]["state"]
+                if state == other_state:
+                    result[agent][state] = agent_actions[agent]["state"]
+                    result[agent]["collision"] = True
+        return result
 
     def __get_next_state(state, action):
+        """Find the next state by applying the given action.
+        Note that this method doesn't check if the action is actually possible.
+        There might be a wall, or the agents might collide.
+        These conditions should be checked by the caller.
+        """
         x,y = state
         if action == Action.NORTH:
             return (x, y+1)
@@ -53,6 +70,10 @@ class GridWorld:
             return (x-1, y)
         else:
             raise Exception(f"Unsupported action {action}")
+
+    def __get_square(state):
+        x,y = state
+        return self.grid[y][x]
     
     def __init__(self, grid, goal_state):
         self.grid = grid
