@@ -14,7 +14,20 @@ class Runner:
         self.environment = environment
         
     def run(self, agents):
-        results = ExperimentResults()
+        experiment_results = ExperimentResults()
         for trial in range(num_trials):
-            results.start_new_trial()
+            experiment_results.start_new_trial()
             for episode in range(num_episodes):
+                agent_actions = {}
+                for agent in agents:
+                    agent_actions[agent.name] = {
+                        "state": agent.state,
+                        "action": agent.select_action()
+                    }
+                action_results = self.environment.apply_actions(agent_actions)
+                experiment_results.record(action_results)
+                for agent in agents:
+                    result = action_results[agent.name]
+                    reward = 0 # TODO: Calculate reward
+                    agent.update_state(result["state"], reward)
+                # TODO: End episode when all agents are in the goal
