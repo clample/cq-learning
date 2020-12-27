@@ -83,7 +83,20 @@ class CQLearner:
         self.latest_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
 
     def select_action(self):
-        return
+        use_global = False # TODO
+        if use_global:
+            self.__select_action_with_table(self.global_q_table, self.state)
+            # TODO: Decrement confidence level
+        else:
+            state = 
+            self.__select_action_with_table(self.local_q_table, self.state[self.name])
+        
+        # TODO: Increment/decrement confidence level
+    def __select_action_with_q_table(self, q_table, state):
+        if random.random() < self.epsilon:
+            return random.choice(self.possible_actions)
+        else:
+            action
 
     def update_state(self, global_state, reward):
         """Update the state according to the previous action."""
