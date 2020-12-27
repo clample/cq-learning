@@ -36,6 +36,7 @@ class CQLearner:
         self.__update_sliding_windows(global_state, reward)
         self.__update_conflicting_states(global_state, reward)
         self.__update_q_values(global_state, reward)
+        self.state = global_state
             
     def __select_action_with_q_table(self, q_table, state):
         """Selects an action using the given Q table and state.
@@ -64,7 +65,6 @@ class CQLearner:
         new_q_value = reward + self.discound_factor * max_q_value_next_action
         q_table[old_state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
         
-        self.state = global_state
 
     def __update_conflicting_states(self, global_state, reward):
         local_state = global_state[self.name]
