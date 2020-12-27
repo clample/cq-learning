@@ -44,7 +44,7 @@ class CQLearner:
         
         self.__update_sliding_windows(self.local_state, reward)
         self.__update_conflicting_states(self.global_state, self.local_state, reward)
-        self.__update_q_values(self.global_state, self.local_state, old_global_state, old_local_state, reward)
+        self.__update_q_values(self.local_state, old_global_state, old_local_state, reward)
 
             
     def __select_action_with_q_table(self, q_table, state):
@@ -58,8 +58,8 @@ class CQLearner:
             # If the Q table hasn't been initialized yet for this state, select an arbitrary action (NORTH)
             return max(action_table, key=action_table.get) if action_table else Action.NORTH
         
-    def __update_q_values(self, new_global_state, new_local_state, old_global_state, old_local_state, reward):
-        use_global = global_state in self.coordination_states_confidence
+    def __update_q_values(self, new_local_state, old_global_state, old_local_state, reward):
+        use_global = old_global_state in self.coordination_states_confidence
 
         q_table = self.global_q_table if use_global else self.local_q_table
         old_state = old_global_state if use_global else old_local_state
@@ -68,9 +68,9 @@ class CQLearner:
             # The Q-values for the state haven't been initialized yet
             q_table[old_state] = dict.fromkeys(self.possible_actions, 0)
             
-        max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if self.q_table.get(new_local_state) else 0
+        max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if self.local_q_table.get(new_local_state) else 0
         old_q_value = q_table[old_state][self.previous_action]
-        new_q_value = reward + self.discound_factor * max_q_value_next_action
+        new_q_value = reward + self.discount_factor * max_q_value_next_action
         q_table[old_state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
         
 
@@ -108,6 +108,8 @@ class CQLearner:
             self.latest_rewards[new_local_state][self.previous_action].append(reward)
     
     def __is_conflict_detected(self, local_state, action):
+        if not self.initial_rewards.get(local_state) or not self.latest_rewards.get(local_state):
+            return False
         test_result = stats.ttest_ind(self.initial_rewards[local_state][action], self.latest_rewards[local_state][action])
         return test_result.pvalue < 0.10
 
