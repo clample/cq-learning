@@ -1,196 +1,134 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 23 10:26:22 2020
-
-@author: as
-"""
-
-
-import numpy as np
 import random
 from scipy import stats
+from .action import Action
 from collections import deque
 
-class ActionSelector: 
-    epison = None
-    discount_factor = None
-    learning_rate = None
-
-    q_values = None
-    no_of_states = None
-    no_of_actions = None
-    name = None
-    
-    def __init__(self, name, no_of_states, no_of_actions, epison=0.1, discount_factor=0.9, learning_rate=0.1):
-        self.epison = epison
-        self.discount_factor = discount_factor
-        self.learning_rate = learning_rate
-        self.no_of_states = no_of_states
-        self.no_of_actions = no_of_actions
-        self.name = name
-        
-    def selectAction(self, state):
-        if (random.random() < self.epison):
-            return self.randomAction()
-        else:
-            return self.bestAction(state)
-    
-    def randomAction(self):
-        return np.random.choice(self.no_of_actions)
-        
-    def bestAction(self, state):
-        return np.random.choice(np.flatnonzero(self.q_values[state] == max(self.q_values[state])))
-    
-        
-class LocalActionSelector(ActionSelector): 
-    def setup(self):
-        self.q_values = np.zeros((self.no_of_states, self.no_of_actions))
-        
-    def maxQValue(self, state):
-        return max(self.q_values[state])
-
-    def updateQValues(self, state, action, next_state, reward): 
-        old_q_value = self.q_values[state][action]
-        new_q_value = reward + self.discount_factor * max(self.q_values[next_state])
-        self.q_values[state][action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
-        
-        
-class GlobalActionSelector(ActionSelector): 
-    def setup(self):
-        self.q_values = {}
-    
-    def addState(self, state):
-        if (state not in self.q_values.keys()):
-            self.q_values[state] = np.zeros(self.no_of_actions)
-        
-    def updateQValuesWithMaxQ(self, state, action, reward, maxQValue): 
-        if (state not in self.q_values.keys()):
-            self.q_values[state] = np.zeros(self.no_of_actions)
-            
-        old_q_value = self.q_values[state][action]
-        new_q_value = reward + self.discount_factor * maxQValue
-        self.q_values[state][action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
-        
-        
-        
-
 class CQLearner: 
-    
-    coordination_joint_states = None
-    coordination_joint_states_confidence = None
-    
-    local_action_selector = None
-    global_action_selector = None
-    
-    initial_rewards = None
-    latest_rewards = None
-    
-    no_of_actions = None
-    no_of_states = None
-    
-    epison = None
-    discount_factor = None
-    learning_rate = None
-    sliding_window_size = None
-    name = None
-    
-    def __init__(self, name, no_of_states, no_of_actions, sliding_window_size=60, epison=0.1, discount_factor=0.9, learning_rate=0.1):
+        
+    def __init__(self, name, initial_state, sliding_window_size=60, epsilon=0.1, discount_factor=0.9, learning_rate=0.1):
         self.name = name
-        self.no_of_actions = no_of_actions
-        self.no_of_states = no_of_states
-        self.epison = epison
+        self.epsilon = epsilon
         self.discount_factor = discount_factor
         self.learning_rate = learning_rate
         self.sliding_window_size = sliding_window_size
+        self.possible_actions = [Action.NORTH, Action.SOUTH, Action.EAST, Action.WEST]
         
-        self.coordination_joint_states = []
-        self.coordination_joint_states_confidence = {}
-        
-        self.local_action_selector = LocalActionSelector(name, no_of_states, no_of_actions, epison, discount_factor, learning_rate)
-        self.local_action_selector.setup()
-        self.global_action_selector = GlobalActionSelector(name, no_of_states, no_of_actions, epison, discount_factor, learning_rate)
-        self.global_action_selector.setup()
-    
-        self.initial_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
-        self.latest_rewards = [ [deque(maxlen=sliding_window_size) for a in range(no_of_actions)] for s in range(no_of_states) ]
-    
-    
-    def reset(self):
-        self.coordination_joint_states = []
-        self.coordination_joint_states_confidence = {}
-        #self.latest_rewards = [ [deque(maxlen=self.sliding_window_size) for a in range(self.no_of_actions)] for s in range(self.no_of_states) ]
-    
-    def takeAction(self, local_state, global_state):
-        isNecessary, joint_states_including_local_state = self.__isCoordinationNecessary(local_state)
+        self.coordination_states_confidence = {}
 
-        if (isNecessary and (global_state in joint_states_including_local_state) 
-          #  and self.coordination_joint_states_confidence[global_state] > np.median(list(self.coordination_joint_states_confidence.values()))
-          ):
-            action = self.global_action_selector.selectAction(global_state)
-            is_joint = True
-            self.__incrementCoordinationJointStateConfidence(joint_states_including_local_state)
-        else:
-            action = self.local_action_selector.selectAction(local_state)
-            self.__decrementCoordinationJointStateConfidence(joint_states_including_local_state)
-            is_joint = False
-            
-        return (action, is_joint) 
-    
-    def __isCoordinationNecessary(self, state):
-        joint_actions = [joint_state for joint_state in self.coordination_joint_states if joint_state[0] == state]
-        return len(joint_actions) > 0, joint_actions
-            
-    def __incrementCoordinationJointStateConfidence(self, joint_states):
-        for js in joint_states:            
-            self.coordination_joint_states_confidence[js] += 1
+        self.local_q_table = {}
+        self.global_q_table = {}
         
-    def __decrementCoordinationJointStateConfidence(self, joint_states):
-        for js in joint_states:            
-            self.coordination_joint_states_confidence[js] -= 13
-            # larger discount valuese preferred for game1 (ex: 13) and larger for game2 (30)
+        self.initial_rewards = {}
+        self.latest_rewards = {}
+        self.initial_state = initial_state
+        self.local_state = initial_state[self.name]
+        self.global_state = frozenset(initial_state.items())
+        self.previous_action = None
+
+    def select_action(self):
+        use_global = self.global_state in self.coordination_states_confidence
+        if use_global:
+            self.previous_action = self.__select_action_with_q_table(self.global_q_table, self.global_state)
+            self.__increment_coordination_confidence()
+        else:
+            self.previous_action = self.__select_action_with_q_table(self.local_q_table, self.local_state)
+            self.__decrement_coordination_confidence()
+        return self.previous_action
+
+    def update_state(self, global_state, reward):
+        """Update the state according to the previous action."""    
+
+        old_local_state = self.local_state
+        old_global_state = self.global_state
+        # By using a frozenset, global_state can be used as a key in self.global_q_table
+        self.global_state = frozenset(global_state.items()) 
+        self.local_state = global_state[self.name]
+        
+        self.__update_sliding_windows(old_local_state, reward)
+        self.__update_conflicting_states(old_global_state, old_local_state, reward)
+        self.__update_q_values(self.local_state, old_global_state, old_local_state, reward)
+
+    def reset_state(self):
+        """Reset the state between episodes"""
+        self.global_state = frozenset(self.initial_state.items())
+        self.local_state = self.initial_state[self.name]
             
-            if (self.coordination_joint_states_confidence[js] < 5):
-                self.coordination_joint_states.remove(js)
-                del self.coordination_joint_states_confidence[js]
+    def __select_action_with_q_table(self, q_table, state):
+        """Selects an action using the given Q table and state.
+        The Q table and state could be either local or global
+        """
+        if random.random() < self.epsilon:
+            return random.choice(self.possible_actions)
+        else:
+            action_table = q_table.get(state)
+            # If the Q table hasn't been initialized yet for this state, select an arbitrary action (NORTH)
+            return max(action_table, key=action_table.get) if action_table else Action.NORTH
+        
+    def __update_q_values(self, new_local_state, old_global_state, old_local_state, reward):
+        use_global = old_global_state in self.coordination_states_confidence
+
+        q_table = self.global_q_table if use_global else self.local_q_table
+        old_state = old_global_state if use_global else old_local_state
+
+        if not q_table.get(old_state):
+            # The Q-values for the state haven't been initialized yet
+            q_table[old_state] = dict.fromkeys(self.possible_actions, 0)
+            
+        max_q_value_next_action = max(self.local_q_table.get(new_local_state).values()) if self.local_q_table.get(new_local_state) else 0
+        old_q_value = q_table[old_state][self.previous_action]
+        new_q_value = reward + self.discount_factor * max_q_value_next_action
+        q_table[old_state][self.previous_action] = old_q_value + self.learning_rate * (new_q_value - old_q_value)
+        
+
+    def __update_conflicting_states(self, old_global_state, old_local_state, reward):
+        if old_global_state in self.coordination_states_confidence:
+            return
+        
+        conflict_detected = self.__is_conflict_detected(old_local_state, self.previous_action)
+        reward_lower = self.__is_reward_less_than_average(old_local_state, self.previous_action, reward)
+        if conflict_detected and reward_lower and old_global_state not in self.coordination_states_confidence.keys():
+            self.coordination_states_confidence[old_global_state] = 50
+    
+    def __increment_coordination_confidence(self):
+        for state in self.coordination_states_confidence:
+            state_dict = dict(state)
+            if state_dict[self.name] == self.local_state:
+                self.coordination_states_confidence[state] += 20
                 
-        
-        
-    
-    def enviornmentFeedback(self, local_state, global_state, action, next_state, reward):
-        self.__updateSlidingWindows(local_state, action, reward)
-    
-        if (self.__isConflictDetected(local_state, action) and self.__isRewardLessThanAverage(local_state, action, reward)):
-            self.__markStateAsCoordinationNeeded(global_state)
-            
-        self.__updateQValues(local_state, global_state, action, next_state, reward)
-            
-    
-    def __updateSlidingWindows(self, local_state, action, reward):
-        if len(self.initial_rewards[local_state][action]) < self.sliding_window_size:
-            self.initial_rewards[local_state][action].append(reward)
-        else:
-            self.latest_rewards[local_state][action].append(reward)        
-    
-    def __isConflictDetected(self, local_state, action):
-        test_result = stats.ttest_ind(self.initial_rewards[local_state][action], self.latest_rewards[local_state][action])
-        return test_result.pvalue < .05
-    
-    def __isRewardLessThanAverage(self, local_state, action, reward):
-        return stats.ttest_1samp(self.latest_rewards[local_state][action], popmean=reward)
-        
-    def __markStateAsCoordinationNeeded(self, global_state):
-        if(global_state not in self.coordination_joint_states):
-            self.coordination_joint_states.append(global_state)
-            self.coordination_joint_states_confidence[global_state] = 10
-            self.global_action_selector.addState(global_state)
-        
-    def __updateQValues(self, local_state, global_state, action, next_state, reward):
-        isNecessary, _ = self.__isCoordinationNecessary(local_state)
-        if (isNecessary):
-            self.global_action_selector.updateQValuesWithMaxQ(global_state, action, reward, self.local_action_selector.maxQValue(next_state))
-        else:
-            self.local_action_selector.updateQValues(local_state, action, next_state, reward)
+    def __decrement_coordination_confidence(self):
+        for state in self.coordination_states_confidence:
+            state_dict = dict(state)
+            if state_dict[self.name] == self.local_state:                
+                self.coordination_states_confidence[state] -= 1
 
+        # Remove coordination states that have low confidence
+        self.coordination_states_confidence = {
+            state: val for state, val in self.coordination_states_confidence.items() if val > 0
+        }
+    
+    def __update_sliding_windows(self, old_local_state, reward):
 
-    def global_state_size(self):
-        return len(self.coordination_joint_states)
+        if not self.initial_rewards.get(old_local_state):
+            self.initial_rewards[old_local_state] = { action:[] for action in self.possible_actions }
+
+        if len(self.initial_rewards[old_local_state][self.previous_action]) < self.sliding_window_size:
+            self.initial_rewards[old_local_state][self.previous_action].append(reward)
+        else:
+            if not self.latest_rewards.get(old_local_state):
+                self.latest_rewards[old_local_state] = { action:deque(maxlen=self.sliding_window_size) for action in self.possible_actions }
+            self.latest_rewards[old_local_state][self.previous_action].append(reward)
+    
+    def __is_conflict_detected(self, local_state, action):
+        initial_rewards = self.initial_rewards.get(local_state)
+        latest_rewards = self.latest_rewards.get(local_state)
+        if not (initial_rewards and latest_rewards
+                and len(initial_rewards[action]) == self.sliding_window_size
+                and len(latest_rewards[action]) == self.sliding_window_size):
+            return False
+        test_result = stats.ttest_ind(initial_rewards[action], latest_rewards[action])
+        return test_result.pvalue < 0.2
+
+    def __is_reward_less_than_average(self, local_state, action, reward):
+        # TODO: Fix
+        return True
+        # return stats.ttest_1samp(self.latest_rewards[local_state][action], popmean=reward)                
