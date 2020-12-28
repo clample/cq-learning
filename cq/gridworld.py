@@ -56,9 +56,14 @@ class GridWorld:
                     continue
                 other_state = result[agent]["state"]
                 # We don't consider it a collision if both agents end in the goal
-                if state == other_state and state != self.goal_state:
-                    result[agent][state] = agent_actions[agent]["state"]
+                if state == other_state and state != self.goal_state:                    
                     result[agent]["collision"] = True
+
+        # Reset the states of the collided agents
+        for agent in agent_actions:
+            if result[agent]["collision"]:
+                result[agent]["state"] = agent_actions[agent]["state"]
+        
         return result
 
     def __get_next_state(self, state, action):
