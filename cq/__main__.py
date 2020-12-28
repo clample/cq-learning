@@ -6,7 +6,7 @@ from .plot import Plot
 
 def main(args=None):
     gridworld = GridWorld.basic_grid()
-    runner = Runner(2000, 1, gridworld)
+    runner = Runner(2000, 15, gridworld)
     plot = Plot()
     plot.collisions_over_time_plot({
         "Independent": runner.run(create_independent_agents),

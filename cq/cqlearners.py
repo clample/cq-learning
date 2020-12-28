@@ -126,7 +126,7 @@ class CQLearner:
                 and len(latest_rewards[action]) == self.sliding_window_size):
             return False
         test_result = stats.ttest_ind(initial_rewards[action], latest_rewards[action])
-        return test_result.pvalue < 0.05
+        return test_result.pvalue < 0.2
 
     def __is_reward_less_than_average(self, local_state, action, reward):
         # TODO: Fix
