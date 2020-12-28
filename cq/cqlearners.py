@@ -99,7 +99,7 @@ class CQLearner:
         for state in self.coordination_states_confidence:
             state_dict = dict(state)
             if state_dict[self.name] == self.local_state:                
-                self.coordination_states_confidence[state] -= 0
+                self.coordination_states_confidence[state] -= 1
 
         # Remove coordination states that have low confidence
         self.coordination_states_confidence = {
