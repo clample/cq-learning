@@ -38,6 +38,10 @@ class IndependentAgent:
             self.previous_action = action
             return action
 
+    def reset_state(self):
+        """Reset the state between episodes"""
+        self.local_state = self.initial_state
+        
     def __select_greedy_action(self):
         """Greedily selects an action based on the current Q-table"""
         
@@ -64,3 +68,4 @@ class IndependentAgent:
         self.time_step = 1
         self.name = name
         self.previous_action = None
+        self.initial_state = state

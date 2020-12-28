@@ -22,6 +22,8 @@ class Runner:
         """Run an episode and record the results using experiment_results
         An episode is considered complete when all agents have reached their goal
         """
+        for agent in agents:
+            agent.reset_state()
         experiment_results.start_new_episode()
         # active_agents tracks which agents haven't yet reached their goal
         # `list` is used to make a shallow copy
@@ -49,11 +51,11 @@ class Runner:
             
     def __calculate_reward(self, wall, collision, goal):
         if collision:
-            return -50
+            return -200
         elif wall:
-            return -10
+            return -30
         elif goal:
-            return 1000
+            return 500
         else:
             return 0
             

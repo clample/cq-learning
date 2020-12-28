@@ -54,7 +54,7 @@ class GridWorld:
             for other_agent in agent_actions:
                 if agent == other_agent:
                     continue
-                other_state = result[agent]["state"]
+                other_state = result[other_agent]["state"]
                 # We don't consider it a collision if both agents end in the goal
                 if state == other_state and state != self.goal_state:                    
                     result[agent]["collision"] = True
