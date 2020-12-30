@@ -100,3 +100,13 @@ class GridWorld:
             [ cls.GridSquare(wall_south=True, wall_west=True),                  cls.GridSquare(),                cls.GridSquare(wall_south=True, wall_east=True)                  ],
             [ cls.GridSquare(wall_north=True, wall_south=True, wall_west=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_north=True, wall_south=True, wall_east=True) ]
         ], (1,0))
+
+    @classmethod
+    def tunnel_to_goal(cls):
+        return GridWorld([
+            [ cls.GridSquare(wall_north=True, wall_west=True), cls.GridSquare(wall_north=True), cls.GridSquare(wall_north=True), cls.GridSquare(wall_north=True), cls.GridSquare(wall_north=True, wall_east=True)],
+            [ cls.GridSquare(wall_south=True, wall_west=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_east=True)                 ],
+            [ cls.GridSquare(wall_north=True, wall_south=True, wall_west=True), cls.GridSquare(wall_north=True, wall_south=True), cls.GridSquare(wall_north=True, wall_south=True), cls.GridSquare(wall_north=True, wall_south=True), cls.GridSquare(wall_east=True) ],
+            [ cls.GridSquare(wall_north=True, wall_west=True), cls.GridSquare(wall_north=True), cls.GridSquare(wall_north=True), cls.GridSquare(wall_north=True), cls.GridSquare(wall_east=True)],
+            [ cls.GridSquare(wall_south=True, wall_west=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_south=True), cls.GridSquare(wall_south=True, wall_east=True)]
+        ], (0, 2))

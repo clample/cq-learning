@@ -55,7 +55,7 @@ class Runner:
         elif wall:
             return -30
         elif goal:
-            return 500
+            return 10000
         else:
             return 0
             

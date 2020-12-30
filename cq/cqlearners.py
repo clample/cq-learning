@@ -61,8 +61,15 @@ class CQLearner:
             return random.choice(self.possible_actions)
         else:
             action_table = q_table.get(state)
-            # If the Q table hasn't been initialized yet for this state, select an arbitrary action (NORTH)
-            return max(action_table, key=action_table.get) if action_table else Action.NORTH
+            if action_table:
+                max_value = max(action_table.values())
+                max_actions = [ action for action,val in action_table.items() if val==max_value ]
+                # If there are multiple actions with the same value, we select one randomly
+                # This should help add additional exploration
+                return random.choice(max_actions)
+            else:
+                # If the Q table hasn't been initialized yet for this state, select an arbitrary action
+                return random.choice(self.possible_actions)
         
     def __update_q_values(self, new_local_state, old_global_state, old_local_state, reward):
         use_global = old_global_state in self.coordination_states_confidence
