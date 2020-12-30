@@ -50,10 +50,14 @@ class IndependentAgent:
         if not action_table:
             # The Q table hasn't been initialized yet for this state,
             # so we select an arbitrary action
-            return Action.NORTH
-
-        return max(action_table, key=action_table.get)
-
+            return self.__select_random_action()
+        
+        max_value = max(action_table.values())
+        max_actions = [ action for action,val in action_table.items() if val==max_value ]
+        # If there are multiple actions with the same value, we select one randomly
+        # This should help add additional exploration
+        return random.choice(max_actions)
+        
     def __select_random_action(self):
         return random.choice(self.possible_actions)
         

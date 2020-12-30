@@ -11,7 +11,7 @@ class Plot:
         plt.xlabel("Episode")
         plt.ylabel("No of collisions")
         plt.legend()
-        plt.savefig("plots/collisions-over-time.png")
+        plt.savefig(f"plots/{self.file_prefix}-collisions-over-time.png")
     
-    def __init__(self):
-        return
+    def __init__(self, file_prefix):
+        self.file_prefix = file_prefix
