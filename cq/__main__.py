@@ -5,7 +5,7 @@ from .cqlearners import CQLearner
 from .plot import Plot
 
 def main(args=None):
-    # run_basic_grid()
+    run_basic_grid()
     run_tunnel_to_goal()
 
 def run_tunnel_to_goal():
@@ -20,7 +20,7 @@ def run_tunnel_to_goal():
     
 def run_basic_grid():
     gridworld = GridWorld.basic_grid()
-    runner = Runner(2000, 1, gridworld)
+    runner = Runner(2000, 5, gridworld)
     plot = Plot("basic")
     agent_creator = AgentCreator((0,2), (2,2))
     plot.collisions_over_time_plot({
