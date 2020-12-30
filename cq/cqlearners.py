@@ -92,7 +92,7 @@ class CQLearner:
             return
         
         conflict_detected = self.__is_conflict_detected(old_local_state, self.previous_action)
-        reward_lower = self.__is_reward_less_than_average(old_local_state, self.previous_action, reward)
+        reward_lower = self.__is_reward_maybe_less_than_average(old_local_state, self.previous_action, reward)
         if conflict_detected and reward_lower and old_global_state not in self.coordination_states_confidence.keys():
             self.coordination_states_confidence[old_global_state] = 50
     
@@ -133,9 +133,16 @@ class CQLearner:
                 and len(latest_rewards[action]) == self.sliding_window_size):
             return False
         test_result = stats.ttest_ind(initial_rewards[action], latest_rewards[action])
+        # Low p value -> unlikely they are from the same distribution
         return test_result.pvalue < 0.2
 
-    def __is_reward_less_than_average(self, local_state, action, reward):
-        # TODO: Fix
-        return True
-        # return stats.ttest_1samp(self.latest_rewards[local_state][action], popmean=reward)                
+    def __is_reward_maybe_less_than_average(self, local_state, action, reward):
+        latest_rewards = self.latest_rewards.get(local_state)
+        if not (latest_rewards and len(latest_rewards[action]) == self.sliding_window_size):
+                return False
+    
+        t_test = stats.ttest_1samp(latest_rewards[action], popmean=reward)        
+        is_reward_smaller = t_test.statistic > 0
+        is_confident = t_test.pvalue > 0.8
+        
+        return is_reward_smaller or not is_confident
