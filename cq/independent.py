@@ -41,6 +41,9 @@ class IndependentAgent:
     def reset_state(self):
         """Reset the state between episodes"""
         self.local_state = self.initial_state
+
+    def get_state_space_size(self):
+        return len(self.q_table)
         
     def __select_greedy_action(self):
         """Greedily selects an action based on the current Q-table"""

@@ -9,7 +9,8 @@ class Runner:
 
     def run(self, agent_creator):
         """Run the experiment with the given number of trials and episodes"""
-        experiment_results = ExperimentResults()
+        agent_names = list(map(lambda agent: agent.name, agent_creator()))
+        experiment_results = ExperimentResults(agent_names)
         for trial in range(self.num_trials):
             experiment_results.start_new_trial()
             # New agents are created for each trial, but reused between episodes
@@ -24,6 +25,7 @@ class Runner:
         """
         for agent in agents:
             agent.reset_state()
+            experiment_results.record_states(agent.name, agent.get_state_space_size())
         experiment_results.start_new_episode()
         # active_agents tracks which agents haven't yet reached their goal
         # `list` is used to make a shallow copy

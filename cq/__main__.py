@@ -5,22 +5,28 @@ from .cqlearners import CQLearner
 from .plot import Plot
 
 def main(args=None):
-    run_basic_grid()
+#    run_basic_grid()
     run_tunnel_to_goal()
 
 def run_tunnel_to_goal():
     gridworld = GridWorld.tunnel_to_goal()
-    runner = Runner(2000, 5, gridworld)
+    runner = Runner(2000, 1, gridworld)
     plot = Plot("tunnel")
     agent_creator = AgentCreator((0,0), (0,4))
+    independent_results = runner.run(agent_creator.create_independent_agents)
+    cq_results = runner.run(agent_creator.create_cq_agents)
     plot.collisions_over_time_plot({
-        "Independent": runner.run(agent_creator.create_independent_agents),
-        "CQ": runner.run(agent_creator.create_cq_agents)
+        "Independent": independent_results,
+        "CQ": cq_results
+    })
+    plot.states_over_time_plot({
+        "Independent": independent_results,
+        "CQ": cq_results
     })
     
 def run_basic_grid():
     gridworld = GridWorld.basic_grid()
-    runner = Runner(2000, 5, gridworld)
+    runner = Runner(2000, 2, gridworld)
     plot = Plot("basic")
     agent_creator = AgentCreator((0,2), (2,2))
     plot.collisions_over_time_plot({

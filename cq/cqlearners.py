@@ -52,6 +52,9 @@ class CQLearner:
         """Reset the state between episodes"""
         self.global_state = frozenset(self.initial_state.items())
         self.local_state = self.initial_state[self.name]
+
+    def get_state_space_size(self):
+        return len(self.local_q_table) + len(self.coordination_states_confidence)
             
     def __select_action_with_q_table(self, q_table, state):
         """Selects an action using the given Q table and state.
@@ -94,13 +97,13 @@ class CQLearner:
         conflict_detected = self.__is_conflict_detected(old_local_state, self.previous_action)
         reward_lower = self.__is_reward_maybe_less_than_average(old_local_state, self.previous_action, reward)
         if conflict_detected and reward_lower and old_global_state not in self.coordination_states_confidence.keys():
-            self.coordination_states_confidence[old_global_state] = 50
+            self.coordination_states_confidence[old_global_state] = 30
     
     def __increment_coordination_confidence(self):
         for state in self.coordination_states_confidence:
             state_dict = dict(state)
             if state_dict[self.name] == self.local_state:
-                self.coordination_states_confidence[state] += 20
+                self.coordination_states_confidence[state] += 2
                 
     def __decrement_coordination_confidence(self):
         for state in self.coordination_states_confidence:
