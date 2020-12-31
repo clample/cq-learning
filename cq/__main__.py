@@ -10,7 +10,7 @@ def main(args=None):
 
 def run_tunnel_to_goal():
     gridworld = GridWorld.tunnel_to_goal()
-    runner = Runner(2000, 10, gridworld)
+    runner = Runner(2000, 10, gridworld, goal_reward=2000)
     plot = Plot("tunnel")
     agent_creator = AgentCreator((0,0), (0,4))
     independent_results = runner.run(agent_creator.create_independent_agents)
@@ -26,7 +26,7 @@ def run_tunnel_to_goal():
     
 def run_basic_grid():
     gridworld = GridWorld.basic_grid()
-    runner = Runner(2000, 10, gridworld)
+    runner = Runner(2000, 10, gridworld, goal_reward=500)
     plot = Plot("basic")
     agent_creator = AgentCreator((0,2), (2,2))
     plot.collisions_over_time_plot({
@@ -38,8 +38,8 @@ class AgentCreator:
     def create_independent_agents(self):
         learning_rate = lambda time_step: 0.1
         return [
-            IndependentAgent(learning_rate=learning_rate, epsilon=0.1, discount_factor=0.75, state=self.start_1, name="Agent 1"),
-            IndependentAgent(learning_rate=learning_rate, epsilon=0.1, discount_factor=0.75, state=self.start_2, name="Agent 2")
+            IndependentAgent(learning_rate=learning_rate, epsilon=0.1, discount_factor=0.5, state=self.start_1, name="Agent 1"),
+            IndependentAgent(learning_rate=learning_rate, epsilon=0.1, discount_factor=0.5, state=self.start_2, name="Agent 2")
         ]
 
     def create_cq_agents(self):
@@ -47,7 +47,7 @@ class AgentCreator:
             "Agent 1": self.start_1,
             "Agent 2": self.start_2
         }
-        return [ CQLearner(name, initial_state, discount_factor=0.75) for name in initial_state ]
+        return [ CQLearner(name, initial_state, discount_factor=0.5) for name in initial_state ]
 
     def __init__(self, start_1, start_2):
         self.start_1 = start_1

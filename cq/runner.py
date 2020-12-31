@@ -2,10 +2,13 @@ from .experiment_results import ExperimentResults
 
 class Runner:
     
-    def __init__(self, num_episodes, num_trials, environment):
+    def __init__(self, num_episodes, num_trials, environment, goal_reward, collision_reward=-200, wall_reward=-30):
         self.num_episodes = num_episodes
         self.num_trials = num_trials
         self.environment = environment
+        self.goal_reward = goal_reward
+        self.collision_reward = collision_reward
+        self.wall_reward = wall_reward
 
     def run(self, agent_creator):
         """Run the experiment with the given number of trials and episodes"""
@@ -53,11 +56,11 @@ class Runner:
             
     def __calculate_reward(self, wall, collision, goal):
         if collision:
-            return -200
+            return self.collision_reward
         elif wall:
-            return -30
+            return self.wall_reward
         elif goal:
-            return 1000
+            return self.goal_reward
         else:
             return 0
             
