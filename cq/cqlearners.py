@@ -145,7 +145,7 @@ class CQLearner:
                 return False
     
         t_test = stats.ttest_1samp(latest_rewards[action], popmean=reward)        
-        is_reward_smaller = t_test.statistic > 0
-        is_confident = t_test.pvalue > 0.8
+        is_reward_greater = t_test.statistic < 0
+        is_confident = t_test.pvalue < 0.2
         
-        return is_reward_smaller or not is_confident
+        return not (is_reward_greater and is_confident)
