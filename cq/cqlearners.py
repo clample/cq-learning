@@ -144,8 +144,9 @@ class CQLearner:
         if not (latest_rewards and len(latest_rewards[action]) == self.sliding_window_size):
                 return False
     
-        t_test = stats.ttest_1samp(latest_rewards[action], popmean=reward)        
-        is_reward_greater = t_test.statistic < 0
-        is_confident = t_test.pvalue < 0.2
+        t_test = stats.ttest_1samp(latest_rewards[action], popmean=reward, alternative="less")
+        # is_reward_greater = t_test.statistic < 0
+
+        is_confident = t_test.pvalue < 0.5
         
-        return not (is_reward_greater and is_confident)
+        return not is_confident
